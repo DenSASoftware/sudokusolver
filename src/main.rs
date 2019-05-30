@@ -161,10 +161,10 @@ fn main() {
 
         // This will always fail under windows, just as it deserves for using \r\n as newline
         if line.len() != 82 {
-            eprintln!("Line doesn't contain 81 characters plus newline, found {:?}", line);
             if line.len() == 0 { // EOF
                 return;
             }
+            eprintln!("Line doesn't contain 81 characters plus newline, found {:?}", line);
 
             continue;
         }
@@ -182,11 +182,11 @@ fn main() {
             }
 
             let digit = ch as i32 - '0' as i32;
-            let bit = if digit > 0 { 1 << digit } else { 0 };
+            let bit = if digit > 0 { 1 << (digit - 1) } else { 0 };
 
             sudoku[i] = bit;
             if digit > 0 {
-                if !sudoku_data[i] & bit != 0 {
+                if (!sudoku_data[i] & bit) != 0 {
                     unsolvable = true;
                     break;
                 }
@@ -204,6 +204,7 @@ fn main() {
                     if *n == 0 { '0' } else { (n.trailing_zeros() as i32 + '0' as i32 + 1) as u8 as char }
                 ).collect::<String>());
             }
+            println!()
         } else {
             println!("No solution found");
         }
