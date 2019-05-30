@@ -150,7 +150,13 @@ fn solve(sudoku: &mut Sudoku, data: &mut SudokuData) -> bool {
 fn main() {
     let stdin = stdin();
     let mut lock = stdin.lock();
+
+    let stdout = stdout();
+    let mut out_lock = stdout.lock();
+
     let mut line = String::with_capacity(82);
+    let mut print_buffer = [0u8; 91];
+    print_buffer[90] = '\n' as u8;
     
     'mainloop: loop {
         line.clear();
@@ -200,11 +206,15 @@ fn main() {
             println!("Instance unsolveable");
         } else if solve(&mut sudoku, &mut sudoku_data) {
             for i in 0..9 {
-                println!("{}", sudoku[i * 9..i * 9 + 9].iter().map(|n|
-                    if *n == 0 { '0' } else { (n.trailing_zeros() as i32 + '0' as i32 + 1) as u8 as char }
-                ).collect::<String>());
+                for j in 0..9 {
+                    let n = sudoku[i * 9 + j];
+                    print_buffer[i * 10 + j] = if n == 0 { ' ' as u8 } else { n.trailing_zeros() as u8 + '0' as u8 + 1 };
+                }
+
+                print_buffer[i * 10 + 9] = '\n' as u8;
             }
-            println!()
+
+            out_lock.write_all(&print_buffer).unwrap();
         } else {
             println!("No solution found");
         }
