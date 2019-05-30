@@ -131,7 +131,7 @@ fn solve(sudoku: &mut Sudoku, data: &mut SudokuData) -> bool {
 
     let mut candidates = data[mindex as usize];
     while candidates != 0 {
-        let c = candidates & !candidates;
+        let c = candidates & -candidates;
         put(sudoku, data, mindex as usize, c);
 
         if solve(sudoku, data) {
