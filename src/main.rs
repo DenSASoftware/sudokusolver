@@ -155,8 +155,8 @@ fn main() {
     let mut out_lock = stdout.lock();
 
     let mut line = String::with_capacity(82);
-    let mut print_buffer = [0u8; 91];
-    print_buffer[90] = '\n' as u8;
+    let mut print_buffer = [0u8; 82];
+    print_buffer[81] = '\n' as u8;
     
     'mainloop: loop {
         line.clear();
@@ -205,13 +205,13 @@ fn main() {
         if unsolvable {
             println!("Instance unsolveable");
         } else if solve(&mut sudoku, &mut sudoku_data) {
-            for i in 0..9 {
-                for j in 0..9 {
-                    let n = sudoku[i * 9 + j];
-                    print_buffer[i * 10 + j] = if n == 0 { ' ' as u8 } else { n.trailing_zeros() as u8 + '0' as u8 + 1 };
+            for i in 0..81 {
+                let n = sudoku[i];
+                if n == 0 {
+                    print_buffer[i] = '0' as u8;
+                } else {
+                    print_buffer[i] = n.trailing_zeros() as u8 + '0' as u8 + 1;
                 }
-
-                print_buffer[i * 10 + 9] = '\n' as u8;
             }
 
             out_lock.write_all(&print_buffer).unwrap();
