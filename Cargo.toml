@@ -1,0 +1,7 @@
+[package]
+name = "sudokusolver"
+version = "0.1.0"
+authors = ["zero <admin@siracprogramming.de>"]
+edition = "2018"
+
+[dependencies]
