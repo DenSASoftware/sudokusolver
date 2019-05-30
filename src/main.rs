@@ -1,44 +1,72 @@
-use std::io::*;
+extern crate rayon;
+
+use std::io::{stdin, stdout, BufRead, Write};
 use std::convert::TryFrom;
+use rayon::prelude::*;
 
 mod sudoku;
 
 use sudoku::Sudoku;
 
+struct SudokuStdinIterator {
+    line: String,
+}
+
+impl SudokuStdinIterator {
+    fn new() -> Self {
+        Self {
+            line: String::with_capacity(82),
+        }
+    }
+}
+
+impl Iterator for SudokuStdinIterator {
+    type Item = Result<Sudoku, ()>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let stdin = stdin();
+        let mut lock = stdin.lock();
+        
+        self.line.clear();
+        if let Err(_) = lock.read_line(&mut self.line) {
+            return None;
+        }
+
+        if self.line.len() != 82 {
+            return None;
+        }
+
+        Some(Sudoku::try_from(&self.line))
+    }
+}
+
 fn main() {
-    let stdin = stdin();
-    let mut lock = stdin.lock();
+    let sudoku_reader = SudokuStdinIterator::new();
+    let mut sudoku_list = sudoku_reader.collect::<Vec<_>>();
 
-    let stdout = stdout();
-    let mut out_lock = stdout.lock();
+    sudoku_list.par_iter_mut()
+    .map(|parse_result| {
+        let solved = match parse_result {
+            Ok(ref mut sudoku) => sudoku.solve(),
+            _ => false,
+        };
 
-    let mut line = String::with_capacity(82);
-    let mut print_buffer = [0u8; 82];
-    print_buffer[81] = '\n' as u8;
-    
-    'mainloop: loop {
-        line.clear();
-
-        if let Err(_) = lock.read_line(&mut line) {
-            break;
-        }
-
-        // This will always fail under windows, just as it deserves for using \r\n as newline
-        if line.len() != 82 {
-            if line.len() == 0 { // EOF
-                return;
-            }
-            eprintln!("Line doesn't contain 81 characters plus newline, found {:?}", line);
-
-            continue;
-        }
-
-        match Sudoku::try_from(&line) {
+        (parse_result, solved)
+    })
+    .for_each(|(parse_result, solved)| {
+        match parse_result {
             Err(_) => {
                 println!("Instance unsolveable");
             },
-            Ok(mut sudoku) => {
-                if sudoku.solve() {
+            Ok(sudoku) => {
+                let stdout = stdout();
+                let mut out_lock = stdout.lock();
+            
+                let mut print_buffer = [0u8; 82];
+                print_buffer[81] = '\n' as u8;
+    
+
+                if solved {
                     let field = sudoku.field();
 
                     for i in 0..81 {
@@ -56,6 +84,6 @@ fn main() {
                 }
             }
         }
-    }
+    });
 }
 
