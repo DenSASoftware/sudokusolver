@@ -127,7 +127,7 @@ fn solve(sudoku: &mut Sudoku, data: &mut SudokuData) -> bool {
     }
 
     let scopy = sudoku.clone();
-    let dcopy = sudoku.clone();
+    let dcopy = data.clone();
 
     let mut candidates = data[mindex as usize];
     while candidates != 0 {
