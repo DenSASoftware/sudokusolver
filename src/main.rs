@@ -70,7 +70,7 @@ fn hsinglesblock(sudoku: &mut Sudoku, data: &mut SudokuData, start: usize, inc: 
     }
 
     let once = onceormore & !twiceormore;
-    if !once != 0 {
+    if once == 0 {
         return false;
     }
 
